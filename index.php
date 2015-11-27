@@ -334,7 +334,13 @@ class ACFToQuickEdit {
 
 				case 'post_object':
 					$post_object = \get_field( $field['key'] );
-					echo \apply_filters( 'acf/quick_edit/field_column/post_object', \get_the_title( $post_object->ID ), $post_object, $post_id );
+					$post_title  = '';
+
+					if ( is_object( $post_object ) ) {
+						$post_title = \get_the_title( $post_object->ID );
+					}
+
+					echo \apply_filters( 'acf/quick_edit/field_column/post_object', $post_title, $post_object, $post_id );
 					break;
 
 				case 'date_picker':

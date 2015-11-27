@@ -1,0 +1,22 @@
+{
+  "name": "mcguffin/acf-quick-edit-fields",
+  "type": "wordpress-plugin",
+  "license": "GPL3",
+  "description": "WordPress Plugin implementing QuickEdit and BulkEdit for Advanced Custom Fields (ACF)",
+  "homepage": "https://github.com/mcguffin/acf-quick-edit-fields",
+  "authors": [
+    {
+      "name": "Jörn Lund",
+      "homepage": "https://github.com/mcguffin"
+    }
+  ],
+  "keywords": [
+    "wordpress"
+  ],
+  "support": {
+    "issues": "https://github.com/mcguffin/acf-quick-edit-fields/issues"
+  },
+  "require": {
+    "php": ">=5.3"
+  }
+}

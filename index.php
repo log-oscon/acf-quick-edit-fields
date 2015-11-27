@@ -332,6 +332,11 @@ class ACFToQuickEdit {
 					echo \apply_filters( 'acf/quick_edit/field_column/true_false', $formatted, $true_false, $post_id );;
 					break;
 
+				case 'post_object':
+					$post_object = \get_field( $field['key'] );
+					echo \apply_filters( 'acf/quick_edit/field_column/post_object', \get_the_title( $post_object->ID ), $post_object, $post_id );
+					break;
+
 				default:
 					echo \get_field( $field['key'] );
 					break;

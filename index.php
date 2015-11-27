@@ -337,6 +337,12 @@ class ACFToQuickEdit {
 					echo \apply_filters( 'acf/quick_edit/field_column/post_object', \get_the_title( $post_object->ID ), $post_object, $post_id );
 					break;
 
+				case 'date_picker':
+					$date   = \get_field( $field['key'] );
+					$format = __( 'Y/m/d', 'acf-quick-edit-fields' );
+					echo \apply_filters( 'acf/quick_edit/field_column/date_picker', date_i18n( $format, strtotime( $date ) ), $date, $post_id );
+					break;
+
 				default:
 					echo \get_field( $field['key'] );
 					break;

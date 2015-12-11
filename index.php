@@ -5,7 +5,7 @@
  * Plugin Name:       ACF QuickEdit Fields
  * Plugin URI:        https://github.com/mcguffin/acf-quick-edit-fields
  * Description:       WordPress Plugin implementing QuickEdit and BulkEdit for Advanced Custom Fields (ACF).
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Jörn Lund
  * Author URI:        https://github.com/mcguffin
  * License:           GPL-3.0+
@@ -13,6 +13,7 @@
  * Text Domain:       acf-quick-edit-fields
  * Domain Path:       /languages
  */
+
 if ( ! class_exists( 'ACFToQuickEdit' ) ) :
 
 class ACFToQuickEdit {
@@ -62,13 +63,13 @@ class ACFToQuickEdit {
 	 * @action 'plugins_loaded'
 	 */
 	public function setup() {
+
 		if ( ! \class_exists( 'acf' ) ) {
 			return;
 		}
 
-		\add_action( 'admin_init', array( &$this,'admin_init' ) );
-		\add_action( 'admin_init', array( &$this, 'init_columns' ) );
-		\add_action( 'load-admin-ajax.php', array( &$this, 'init_columns' ) );
+		\add_action( 'admin_init',                array( &$this, 'admin_init' ) );
+		\add_action( 'admin_init',                array( &$this, 'init_columns' ) );
 		\add_action( 'wp_ajax_get_acf_post_meta', array( &$this, 'ajax_get_acf_post_meta' ) );
 	}
 
@@ -91,6 +92,10 @@ class ACFToQuickEdit {
 		foreach ( $types_can_be as $type ) {
 			\add_action( "acf/render_field_settings/type={$type}", array( &$this, 'render_bulk_edit_settings' ) );
 		}
+
+		// Enqueue all the required scripts / styles for ACF
+		\wp_enqueue_script( 'acf-input' );
+		\wp_enqueue_style( 'acf-input' );
 	}
 
 	/**
@@ -230,7 +235,7 @@ class ACFToQuickEdit {
 		}
 
 		if ( count( $this->quickedit_fields ) ) {
-			\add_action( 'quick_edit_custom_box',  array( &$this,'display_quick_edit' ), 10, 2);
+			\add_action( 'quick_edit_custom_box',  array( &$this, 'display_quick_edit' ), 10, 2 );
 			\add_action( 'save_post',              array( &$this, 'quickedit_save_acf_meta' ) );
 
 			\wp_enqueue_script(
@@ -252,34 +257,55 @@ class ACFToQuickEdit {
 	 * @action 'wp_ajax_get_acf_post_meta'
 	 */
 	function ajax_get_acf_post_meta() {
-		header( 'Content-Type: application/json' );
-		if ( isset( $_REQUEST['post_id'], $_REQUEST['acf_field_keys'] ) ) {
-			$result = array();
 
-			$post_ids = (array) $_REQUEST['post_id'];
-			array_filter( $post_ids, 'intval' );
-			foreach ( $post_ids as $post_id ) {
-				if ( current_user_can( 'edit_post', $post_id ) ) {
-					$field_keys = $_REQUEST['acf_field_keys'];
-					foreach ( $field_keys as $key ) {
-						$field_obj = get_field_object( $key, $post_id );
-						if ( ! isset( $result[ $key ] ) || $result[ $key ] == $field_obj['value'] ) {
-							$result[ $key ] = $field_obj['value'];
-						}
-						else {
-							$result[ $key ] = '';
-						}
-					}
-				}
-			}
-			echo json_encode( $result );
-			exit();
+		header( 'Content-Type: application/json' );
+
+		if ( empty( $_REQUEST['post_id'] ) && empty( $_REQUEST['acf_field_keys'] ) ) {
+			\wp_die();
 		}
+
+		$result   = array();
+		$post_ids = (array) $_REQUEST['post_id'];
+
+		// Sanitize
+		array_filter( $post_ids, 'intval' );
+
+		foreach ( $post_ids as $post_id ) {
+
+			if ( ! \current_user_can( 'edit_post', $post_id ) ) {
+				break;
+			}
+
+			$field_keys = $_REQUEST['acf_field_keys'];
+			foreach ( $field_keys as $key ) {
+
+				$field       = \get_field_object( $key, $post_id );
+				$field_type  = $field['type'];
+				$field_value = $field['value'];
+
+				if ( isset( $result[$key] ) && $result[$key] === $field_value ) {
+					break;
+				}
+
+				switch ( $field_type ) {
+					case 'date_picker':
+						$field_value = date_i18n( $field['display_format'], strtotime( $field_value ) );
+						break;
+				}
+
+				$result[$key] = $field_value;
+
+			}
+
+		}
+
+		echo json_encode( $result );
+		wp_die();
 	}
 
 	function add_field_columns( $columns ) {
 		foreach ( $this->column_fields as $field_slug => $field ) {
-			$columns[ $field_slug ] = $field['label'];
+			$columns[$field_slug] = $field['label'];
 		}
 		return $columns;
 	}
@@ -320,7 +346,7 @@ class ACFToQuickEdit {
 					//
 					if ( is_array( $field_value ) ) {
 						_e( '(Default value )', 'acf-quick-edit-fields' );
-					} else if ( isset( $field['choices'][ $field_value ] ) ) {
+					} else if ( isset( $field['choices'][$field_value] ) ) {
 						echo $field['choices'][get_field( $field['key'] )];
 					}
 
@@ -344,9 +370,8 @@ class ACFToQuickEdit {
 					break;
 
 				case 'date_picker':
-					$date   = \get_field( $field['key'] );
-					$format = __( 'Y/m/d', 'acf-quick-edit-fields' );
-					echo \apply_filters( 'acf/quick_edit/field_column/date_picker', date_i18n( $format, strtotime( $date ) ), $date, $post_id );
+					$date = \get_field( $field['key'] );
+					echo \apply_filters( 'acf/quick_edit/field_column/date_picker', date_i18n( $field['display_format'], strtotime( $date ) ), $date, $post_id );
 					break;
 
 				default:
@@ -437,6 +462,11 @@ class ACFToQuickEdit {
 									?></label></li><?php
 								?></ul><?php
 								break;
+
+							case 'date_picker':
+								$this->display_quickedit_date_picker( $column, $post_type, $field );
+								break;
+
 							default:
 								?>
 								<input type="text" class="acf-quick-edit" data-acf-field-key="<?php echo $field['key'] ?>" name="<?php echo $this->post_field_prefix . $column; ?>" />
@@ -449,19 +479,57 @@ class ACFToQuickEdit {
 		?></fieldset><?php
 	}
 
-	function quickedit_save_acf_meta( $post_id ) {
-		if ( ! current_user_can( 'edit_post', $post_id ) ) {
-			return;
-		}
-		foreach ( $this->quickedit_fields as $field_name => $field ) {
-			if ( isset( $_REQUEST[ $this->post_field_prefix . $field['name'] ] ) ) {
-				update_post_meta( $post_id, $field['name'], $_REQUEST[ $this->post_field_prefix . $field['name'] ] );
-			}
-		}
+	/**
+	 * Display date_picker field.
+	 *
+	 * @access  private
+	 * @param   string  $column     Column name.
+	 * @param   string  $post_type  Post type.
+	 * @param   array   $field      Field data.
+	 */
+	private function display_quickedit_date_picker( $column, $post_type, $field ) {
+		$key            = $field['key'];
+		$name           = $field['name'];
+		$first_day      = $field['first_day'];
+		$display_format = \acf_convert_date_to_js( $field['display_format'] );
+	?>
+		<div class="acf-field acf-field-date-picker acf-field-<?php echo $key; ?>" data-name="<?php echo $name; ?>" data-type="date_picker" data-key="<?php echo $key; ?>">
+			<div class="acf-input">
+				<div class="acf-date_picker acf-input-wrap" data-display_format="<?php echo $display_format; ?>" data-first_day="<?php echo $first_day; ?>">
+					<input type="hidden" id="acf-<?php echo $key; ?>" name="acf[<?php echo $key; ?>]" value="" class="input-alt">
+					<input type="text" name="<?php echo $this->post_field_prefix . $column; ?>" value="" class="acf-quick-edit input" data-acf-field-key="<?php echo $key; ?>">
+				</div>
+			</div>
+		</div>
+	<?php
 	}
 
+	/**
+	 * Save post meta.
+	 *
+	 * @param  int  $post_id  Post ID.
+	 */
+	function quickedit_save_acf_meta( $post_id ) {
+
+		if ( ! \current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		foreach ( $this->quickedit_fields as $field_name => $field ) {
+
+			if ( ! isset( $_REQUEST['acf'][$field['key']] ) ) {
+				return;
+			}
+
+			$value = \sanitize_text_field( $_REQUEST['acf'][$field['key']] );
+
+			\update_post_meta( $post_id, $field['name'], $value );
+
+		}
+	}
 
 }
 
 ACFToQuickEdit::instance();
+
 endif;

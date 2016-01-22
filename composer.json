@@ -16,7 +16,7 @@
   "support": {
     "issues": "https://github.com/mcguffin/acf-quick-edit-fields/issues"
   },
-  "require": {
-    "php": ">=5.3"
+  "require-dev": {
+    "dangoodman/composer-for-wordpress": "^1.0"
   }
 }

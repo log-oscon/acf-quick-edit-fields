@@ -283,14 +283,18 @@ class ACFToQuickEdit {
 				$field_type  = $field['type'];
 				$field_value = $field['value'];
 
-				if ( isset( $result[$key] ) && $result[$key] === $field_value ) {
-					break;
-				}
-
 				switch ( $field_type ) {
 					case 'date_picker':
-						$field_value = date_i18n( $field['display_format'], strtotime( $field_value ) );
+						if ( ! empty( $field_value ) ) {
+							$field_value = \date_i18n( $field['display_format'], strtotime( $field_value ) );
+						}
 						break;
+				}
+
+				// Clear field value if different:
+				if ( isset( $result[ $key ] ) && $result[ $key ] !== $field_value ) {
+					$result[ $key ] = '';
+					break;
 				}
 
 				$result[$key] = $field_value;
@@ -517,13 +521,16 @@ class ACFToQuickEdit {
 
 		foreach ( $this->quickedit_fields as $field_name => $field ) {
 
-			if ( ! isset( $_REQUEST['acf'][$field['key']] ) ) {
+			if ( ! isset( $_REQUEST['acf'][ $field['key'] ] ) ) {
 				return;
 			}
 
-			$value = \sanitize_text_field( $_REQUEST['acf'][$field['key']] );
+			$value = \sanitize_text_field( $_REQUEST['acf'][ $field['key'] ] );
 
-			\update_post_meta( $post_id, $field['name'], $value );
+			if ( $value !== '' ) {
+				// Save field only if not empty:
+				\update_post_meta( $post_id, $field['name'], $value );
+			}
 
 		}
 	}

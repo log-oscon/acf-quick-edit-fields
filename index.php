@@ -94,6 +94,7 @@ class ACFToQuickEdit {
 		}
 
 		// Enqueue all the required scripts / styles for ACF
+		\wp_enqueue_script( 'jquery-ui-datepicker' );
 		\wp_enqueue_script( 'acf-input' );
 		\wp_enqueue_style( 'acf-input' );
 	}

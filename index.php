@@ -265,7 +265,7 @@ class ACFToQuickEdit {
 		}
 
 		$result   = array();
-		$post_ids = (array) $_REQUEST['post_id'];
+		$post_ids = isset( $_REQUEST['post_id'] ) ? (array) $_REQUEST['post_id'] : array();
 
 		// Sanitize
 		array_filter( $post_ids, 'intval' );

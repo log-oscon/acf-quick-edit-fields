@@ -498,7 +498,7 @@ class ACFToQuickEdit {
 		$first_day      = $field['first_day'];
 		$display_format = \acf_convert_date_to_js( $field['display_format'] );
 	?>
-		<div class="acf-field acf-field-date-picker acf-field-<?php echo $key; ?>" data-name="<?php echo $name; ?>" data-type="date_picker" data-key="<?php echo $key; ?>">
+		<div class="acf-field acf-field-date-picker acf-field-<?php echo $key; ?>" data-name="<?php echo $name; ?>" data-key="<?php echo $key; ?>">
 			<div class="acf-input">
 				<div class="acf-date_picker acf-input-wrap" data-display_format="<?php echo $display_format; ?>" data-first_day="<?php echo $first_day; ?>">
 					<input type="hidden" id="acf-<?php echo $key; ?>" name="acf[<?php echo $key; ?>]" value="" class="input-alt">

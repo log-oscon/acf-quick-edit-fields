@@ -243,7 +243,7 @@ class ACFToQuickEdit {
 
 			\wp_enqueue_script(
 				'acf-quick-edit',
-				\plugins_url('js/acf-quickedit.js', __FILE__ ),
+				\plugins_url( 'js/acf-quickedit.js', __FILE__ ),
 				array( 'jquery-ui-datepicker', 'inline-edit-post' ),
 				null,
 				true

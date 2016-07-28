@@ -97,7 +97,7 @@ class ACFToQuickEdit {
 		\wp_enqueue_script( 'jquery-ui-datepicker' );
 		\wp_enqueue_script( 'acf-input' );
 		\wp_enqueue_style( 'acf-input' );
-		\wp_enqueue_style( 'acf-datepicker', \plugins_url( 'inc/datepicker/jquery-ui.min.css', __FILE__ ) );
+		//\wp_enqueue_style( 'acf-datepicker', \plugins_url( 'inc/datepicker/jquery-ui.min.css', __FILE__ ) );
 
 	}
 

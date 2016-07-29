@@ -97,6 +97,8 @@ class ACFToQuickEdit {
 		\wp_enqueue_script( 'jquery-ui-datepicker' );
 		\wp_enqueue_script( 'acf-input' );
 		\wp_enqueue_style( 'acf-input' );
+		\wp_enqueue_style( 'acf-datepicker', acf_get_dir( 'assets/inc/datepicker/jquery-ui.min.css' ), '', '1.11.4' );
+
 	}
 
 	/**
@@ -242,7 +244,7 @@ class ACFToQuickEdit {
 			\wp_enqueue_script(
 				'acf-quick-edit',
 				\plugins_url( 'js/acf-quickedit.js', __FILE__ ),
-				array( 'inline-edit-post' ),
+				array( 'jquery-ui-datepicker', 'inline-edit-post' ),
 				null,
 				true
 			);
@@ -348,7 +350,6 @@ class ACFToQuickEdit {
 				case 'select':
 					$field_value = get_field( $field['key'] );
 
-					//
 					if ( is_array( $field_value ) ) {
 						_e( '(Default value )', 'acf-quick-edit-fields' );
 					} else if ( isset( $field['choices'][$field_value] ) ) {
@@ -432,8 +433,6 @@ class ACFToQuickEdit {
 
 							case 'radio':
 								// + others
-								//
-
 								?><ul class="acf-radio-list<?php echo $field['other_choice'] ? ' other' : '' ?>" data-acf-field-key="<?php echo $field['key'] ?>"><?php
 								foreach ( $field['choices'] as $name => $value ) {
 									?><li><label for="<?php echo $this->post_field_prefix . $column.'-'.$name; ?>"><?php
@@ -500,9 +499,9 @@ class ACFToQuickEdit {
 	?>
 		<div class="acf-field acf-field-date-picker acf-field-<?php echo $key; ?>" data-name="<?php echo $name; ?>" data-type="date_picker" data-key="<?php echo $key; ?>">
 			<div class="acf-input">
-				<div class="acf-date_picker acf-input-wrap" data-display_format="<?php echo $display_format; ?>" data-first_day="<?php echo $first_day; ?>">
-					<input type="hidden" id="acf-<?php echo $key; ?>" name="acf[<?php echo $key; ?>]" value="" class="input-alt">
-					<input type="text" name="<?php echo $this->post_field_prefix . $column; ?>" value="" class="acf-quick-edit input" data-acf-field-key="<?php echo $key; ?>">
+				<div id="acf-<?php echo $key; ?>" class="acf-date-picker acf-input-wrap" data-date_format="<?php echo $display_format; ?>" data-first_day="<?php echo $first_day; ?>">
+					<input class="input-alt" type="hidden" name="acf[<?php echo $key; ?>]" value="" >
+					<input class="input acf-quick-edit acf-quick-edit-<?php echo $field['type']?>" type="text" value="" name="<?php echo $this->post_field_prefix . $column; ?>" data-acf-field-key="<?php echo $key; ?>">
 				</div>
 			</div>
 		</div>
